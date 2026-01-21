@@ -1,12 +1,21 @@
 {
   "name": "three-links-platform",
+  "version": "1.0.0",
   "private": true,
   "packageManager": "pnpm@8.15.0",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:api": "pnpm --filter api dev",
+    "dev:web": "pnpm --filter web dev",
     "lint": "turbo run lint",
-    "db:push": "pnpm --filter @packages/database db:push"
+    "db:generate": "pnpm --filter @packages/database db:generate",
+    "db:push": "pnpm --filter @packages/database db:push",
+    "db:seed": "pnpm --filter @packages/database db:seed",
+    "db:studio": "pnpm --filter @packages/database db:studio",
+    "db:reset": "pnpm --filter @packages/database prisma migrate reset --force",
+    "init": "node init_full_system.js",
+    "reset": "node reset_system.js"
   },
   "devDependencies": {
     "turbo": "^1.12.0",

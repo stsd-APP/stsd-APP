@@ -1,0 +1,322 @@
+/**
+ * 叁通速达 v2.0 - 全栈核心功能升级脚本
+ * 包含：后端 API 骨架、前端多语言、代付功能、商城页面
+ */
+const fs = require('fs');
+const path = require('path');
+
+// 辅助函数：确保目录存在
+function ensureDir(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+}
+
+// 辅助函数：写入文件
+function writeFile(filePath, content) {
+  ensureDir(path.dirname(filePath));
+  fs.writeFileSync(filePath, content);
+  console.log(`✅ 已更新: ${filePath}`);
+}
+
+// === 1. 后端 (NestJS) 核心模块 ===
+const apiRoot = path.join(__dirname, 'apps/api/src');
+
+// (A) 后端入口与多语言中间件
+writeFile(path.join(apiRoot, 'main.ts'), `
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { PrismaService } from './prisma.service';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  // 允许跨域（方便前端调用）
+  app.enableCors();
+  
+  const prisma = app.get(PrismaService);
+  await prisma.enableShutdownHooks(app);
+
+  await app.listen(3000);
+  console.log('🚀 Server running on http://localhost:3000');
+}
+bootstrap();
+`);
+
+writeFile(path.join(apiRoot, 'app.module.ts'), `
+import { Module } from '@nestjs/common';
+import { PrismaService } from './prisma.service';
+import { AppController } from './app.controller';
+
+@Module({
+  imports: [],
+  controllers: [AppController],
+  providers: [PrismaService],
+})
+export class AppModule {}
+`);
+
+writeFile(path.join(apiRoot, 'prisma.service.ts'), `
+import { Injectable, OnModuleInit, INestApplication } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
+
+@Injectable()
+export class PrismaService extends PrismaClient implements OnModuleInit {
+  async onModuleInit() {
+    await this.$connect();
+  }
+
+  async enableShutdownHooks(app: INestApplication) {
+    this.$on('beforeExit', async () => {
+      await app.close();
+    });
+  }
+}
+`);
+
+// (B) 核心控制器 (集运、代付、商城)
+writeFile(path.join(apiRoot, 'app.controller.ts'), `
+import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { PrismaService } from './prisma.service';
+
+@Controller('api')
+export class AppController {
+  constructor(private readonly prisma: PrismaService) {}
+
+  @Get('hello')
+  getHello(): string {
+    return 'ThreeLinks API v2.0 Online';
+  }
+
+  // 模拟提交集运包裹
+  @Post('package/add')
+  async addPackage(@Body() data: any) {
+    return { code: 200, msg: '包裹预报成功', data };
+  }
+
+  // 模拟代付申请
+  @Post('proxy-pay/add')
+  async addProxyPay(@Body() data: any) {
+    return { code: 200, msg: '代付申请已提交', data };
+  }
+}
+`);
+
+// === 2. 前端 (Vue3) 多语言与页面 ===
+const webRoot = path.join(__dirname, 'apps/web/src');
+
+// (A) 多语言配置 (i18n)
+writeFile(path.join(webRoot, 'locales/zh-TW.json'), JSON.stringify({
+  tabbar: { home: "首頁", logistics: "集運", mall: "商城", mine: "我的" },
+  home: { title: "叁通速達", subtitle: "您專業的跨境物流管家", tracking: "最新包裹動態", mall_hot: "優選商城" },
+  func: { forecast: "集運預報", query: "包裹查詢", estimate: "運費估算", proxy: "代付申請" },
+  proxy: { title: "代付申請", url_label: "商品鏈接", url_ph: "請粘貼淘寶/1688鏈接", amount_label: "代付金額(CNY)", submit: "提交申請" },
+  mall: { title: "優選商城", cart: "購物車" }
+}, null, 2));
+
+writeFile(path.join(webRoot, 'locales/zh-CN.json'), JSON.stringify({
+  tabbar: { home: "首页", logistics: "集运", mall: "商城", mine: "我的" },
+  home: { title: "叁通速达", subtitle: "您专业的跨境物流管家", tracking: "最新包裹动态", mall_hot: "优选商城" },
+  func: { forecast: "集运预报", query: "包裹查询", estimate: "运费估算", proxy: "代付申请" },
+  proxy: { title: "代付申请", url_label: "商品链接", url_ph: "请粘贴淘宝/1688链接", amount_label: "代付金额(CNY)", submit: "提交申请" },
+  mall: { title: "优选商城", cart: "购物车" }
+}, null, 2));
+
+writeFile(path.join(webRoot, 'locales/en.json'), JSON.stringify({
+  tabbar: { home: "Home", logistics: "Shipping", mall: "Mall", mine: "Me" },
+  home: { title: "ThreeLinks", subtitle: "Cross-border Logistics Expert", tracking: "Recent Packages", mall_hot: "Hot Sales" },
+  func: { forecast: "Forecast", query: "Tracking", estimate: "Calculator", proxy: "Proxy Pay" },
+  proxy: { title: "Proxy Payment", url_label: "Product URL", url_ph: "Paste Taobao/1688 URL", amount_label: "Amount (CNY)", submit: "Submit" },
+  mall: { title: "Shop", cart: "Cart" }
+}, null, 2));
+
+writeFile(path.join(webRoot, 'i18n.ts'), `
+import { createI18n } from 'vue-i18n'
+import zhTW from './locales/zh-TW.json'
+import zhCN from './locales/zh-CN.json'
+import en from './locales/en.json'
+
+const i18n = createI18n({
+  legacy: false,
+  locale: localStorage.getItem('lang') || 'zh-TW', // 默认繁体
+  fallbackLocale: 'en',
+  messages: {
+    'zh-TW': zhTW,
+    'zh-CN': zhCN,
+    'en': en
+  }
+})
+
+export default i18n
+`);
+
+// (B) 更新 main.ts 引入 i18n
+writeFile(path.join(webRoot, 'main.ts'), `
+import { createApp } from 'vue'
+import 'virtual:uno.css'
+import 'vant/lib/index.css'
+import { Tabbar, TabbarItem, Button, Card, Tag, Icon, Field, CellGroup, Form, NavBar, Popup, ActionSheet } from 'vant'
+import App from './App.vue'
+import i18n from './i18n'
+
+const app = createApp(App)
+app.use(i18n)
+app.use(Tabbar).use(TabbarItem).use(Button).use(Card).use(Tag).use(Icon)
+   .use(Field).use(CellGroup).use(Form).use(NavBar).use(Popup).use(ActionSheet)
+app.mount('#app')
+`);
+
+// (C) 核心页面逻辑 (App.vue - 整合所有功能)
+writeFile(path.join(webRoot, 'App.vue'), `
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { showToast } from 'vant'
+
+const { t, locale } = useI18n()
+const active = ref(0) // 0:Home, 1:Logistics, 2:Mall, 3:Mine
+
+// 语言切换
+const showLang = ref(false)
+const langActions = [
+  { name: '繁體中文', value: 'zh-TW' },
+  { name: '简体中文', value: 'zh-CN' },
+  { name: 'English', value: 'en' },
+]
+const onSelectLang = (item) => {
+  locale.value = item.value
+  localStorage.setItem('lang', item.value)
+  showLang.value = false
+}
+
+// === 功能模块状态 ===
+const showProxyPay = ref(false) // 代付弹窗
+const proxyForm = ref({ url: '', amount: '' })
+
+const onSubmitProxy = () => {
+  showToast({ type: 'success', message: t('proxy.submit') + ' Success!' })
+  showProxyPay.value = false
+}
+
+// 模拟包裹数据
+const packages = ref([
+  { id: 'SF10086', name: '淘宝集运仓', status: 'ARRIVED', date: '2024-01-21' }
+])
+
+// 模拟商城数据
+const products = ref([
+  { id: 1, title: '现代简约布艺沙发', price: 1299, img: 'bg-gray-200' },
+  { id: 2, title: '实木餐桌组合', price: 899, img: 'bg-gray-200' },
+  { id: 3, title: '全屋定制衣柜', price: 3500, img: 'bg-gray-200' },
+  { id: 4, title: '智能升降茶几', price: 450, img: 'bg-gray-200' }
+])
+</script>
+
+<template>
+  <div class="pb-20 bg-gray-50 min-h-screen">
+    
+    <div v-if="active === 0">
+      <div class="bg-brand text-white p-4 pt-12 rounded-b-xl shadow-lg relative">
+        <div class="flex justify-between items-center z-10 relative">
+          <div>
+            <h1 class="text-xl font-bold">{{ t('home.title') }}</h1>
+            <p class="text-xs opacity-80 mt-1">{{ t('home.subtitle') }}</p>
+          </div>
+          <div class="flex gap-2">
+            <div @click="showLang = true" class="bg-white/20 px-2 py-1 rounded text-xs flex items-center">
+              <div class="i-carbon-language mr-1"></div> {{ locale === 'zh-TW' ? '繁' : (locale === 'en' ? 'EN' : '简') }}
+            </div>
+            <div class="bg-white/20 p-2 rounded-full"><div class="i-carbon-notification text-xl"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-4 gap-2 p-4 -mt-6 relative z-20">
+        <div class="bg-white p-3 rounded-lg shadow-sm flex flex-col items-center gap-2" 
+             @click="item.key === 'proxy' ? showProxyPay = true : null"
+             v-for="item in [
+               {key:'forecast', icon:'delivery'}, 
+               {key:'query', icon:'search'}, 
+               {key:'estimate', icon:'calculator'}, 
+               {key:'proxy', icon:'currency'}
+             ]" :key="item.key">
+          <div class="bg-blue-50 text-brand p-2 rounded-full text-xl">
+             <div :class="\`i-carbon-\${item.icon}\`"></div>
+          </div>
+          <span class="text-xs text-gray-600">{{ t('func.' + item.key) }}</span>
+        </div>
+      </div>
+
+      <div class="px-4 mt-2">
+        <div class="flex justify-between items-center mb-2">
+          <h2 class="font-bold text-gray-800">{{ t('home.tracking') }}</h2>
+        </div>
+        <div v-for="pkg in packages" :key="pkg.id" class="bg-white p-4 rounded-xl shadow-sm mb-3 border-l-4 border-brand flex justify-between">
+          <div>
+            <div class="font-bold">{{ pkg.name }}</div>
+            <div class="text-xs text-gray-400 mt-1">{{ pkg.id }} | {{ pkg.date }}</div>
+          </div>
+          <van-tag type="primary" plain>{{ pkg.status }}</van-tag>
+        </div>
+      </div>
+
+      <div class="px-4 mt-4">
+         <h2 class="font-bold text-gray-800 mb-2">{{ t('home.mall_hot') }}</h2>
+         <div class="grid grid-cols-2 gap-3">
+            <div v-for="p in products.slice(0,2)" :key="p.id" class="bg-white rounded-lg p-2 shadow-sm">
+               <div class="h-24 w-full bg-gray-200 rounded mb-2 flex items-center justify-center text-gray-400 text-xs">IMG</div>
+               <div class="text-sm truncate">{{ p.title }}</div>
+               <div class="text-red-600 font-bold mt-1">¥{{ p.price }}</div>
+            </div>
+         </div>
+      </div>
+    </div>
+
+    <div v-if="active === 2" class="p-4 pt-12">
+      <h1 class="text-xl font-bold mb-4">{{ t('mall.title') }}</h1>
+      <div class="grid grid-cols-2 gap-3">
+        <div v-for="p in products" :key="p.id" class="bg-white rounded-lg p-2 shadow-sm">
+            <div class="h-32 w-full bg-gray-200 rounded mb-2 relative">
+               <div class="absolute top-1 right-1 bg-white/80 p-1 rounded-full text-brand"><div class="i-carbon-shopping-cart-plus"></div></div>
+            </div>
+            <div class="text-sm line-clamp-2 h-10">{{ p.title }}</div>
+            <div class="flex justify-between items-end mt-2">
+              <span class="text-red-600 font-bold">¥{{ p.price }}</span>
+              <span class="text-xs text-gray-400">Sold 100+</span>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <van-popup v-model:show="showProxyPay" position="bottom" round :style="{ height: '50%' }">
+      <div class="p-4">
+        <h3 class="font-bold text-lg mb-4 text-center">{{ t('proxy.title') }}</h3>
+        <van-form @submit="onSubmitProxy">
+          <van-cell-group inset>
+            <van-field v-model="proxyForm.url" :label="t('proxy.url_label')" :placeholder="t('proxy.url_ph')" />
+            <van-field v-model="proxyForm.amount" type="number" :label="t('proxy.amount_label')" placeholder="0.00" />
+          </van-cell-group>
+          <div class="mt-6 px-4">
+            <van-button block type="primary" native-type="submit" color="#1989fa">{{ t('proxy.submit') }}</van-button>
+          </div>
+        </van-form>
+      </div>
+    </van-popup>
+
+    <van-action-sheet v-model:show="showLang" :actions="langActions" @select="onSelectLang" />
+
+    <van-tabbar v-model="active" active-color="#1989fa" class="shadow-2xl">
+      <van-tabbar-item icon="home-o">{{ t('tabbar.home') }}</van-tabbar-item>
+      <van-tabbar-item icon="logistics">{{ t('tabbar.logistics') }}</van-tabbar-item>
+      <van-tabbar-item icon="bag-o">{{ t('tabbar.mall') }}</van-tabbar-item>
+      <van-tabbar-item icon="user-o">{{ t('tabbar.mine') }}</van-tabbar-item>
+    </van-tabbar>
+  </div>
+</template>
+
+<style>
+/* 自定义 Vant 样式覆盖 */
+:root { --van-tabbar-height: 60px; }
+</style>
+`);
+
+console.log('✨ 升级脚本执行完毕！请运行 pnpm install 安装新依赖 (vue-i18n 等)');

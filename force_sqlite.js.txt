@@ -1,0 +1,82 @@
+/**
+ * 暴力切换 SQLite 脚本
+ * 作用：直接覆盖 prisma 配置文件，确保 100% 正确
+ */
+const fs = require('fs');
+const path = require('path');
+
+// 1. 定义正确的 schema.prisma 内容 (SQLite版)
+const schemaContent = `
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 用户模型
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+// 包裹模型
+model Package {
+  id        String   @id @default(uuid())
+  tracking  String   @unique
+  name      String
+  status    String
+  userId    String
+  createdAt DateTime @default(now())
+}
+
+// 代付订单模型 (你刚才加的)
+model ProxyOrder {
+  id        String   @id @default(uuid())
+  userId    String
+  url       String
+  amount    Decimal
+  status    String   @default("PENDING") // 待处理
+  createdAt DateTime @default(now())
+}
+`;
+
+// 2. 定义正确的 .env 内容
+const envContent = `DATABASE_URL="file:./dev.db"`;
+
+// 3. 写入文件
+const dbPath = path.join(__dirname, 'packages/database');
+const prismaPath = path.join(dbPath, 'prisma');
+
+// 确保目录存在
+if (!fs.existsSync(prismaPath)) {
+  fs.mkdirSync(prismaPath, { recursive: true });
+}
+
+console.log('🔄 正在重写数据库配置...');
+fs.writeFileSync(path.join(prismaPath, 'schema.prisma'), schemaContent);
+fs.writeFileSync(path.join(dbPath, '.env'), envContent);
+
+// 删除可能存在的旧迁移文件夹 (防止冲突)
+const migrationPath = path.join(prismaPath, 'migrations');
+if (fs.existsSync(migrationPath)) {
+    fs.rmSync(migrationPath, { recursive: true, force: true });
+    console.log('🗑️  已清理旧的迁移文件');
+}
+
+console.log('✅ 数据库已强制切换为 SQLite 模式！');
+console.log('👉 请立即执行下一步命令。');
+`;
+
+---
+
+### 第二步：运行这个脚本
+
+在终端输入：
+
+```powershell
+node force_sqlite.js

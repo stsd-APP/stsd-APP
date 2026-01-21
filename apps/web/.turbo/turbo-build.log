@@ -1,0 +1,49 @@
+
+> web@0.1.0 build D:\node install\apps\web
+> vite build
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+vite v5.4.21 building for production...
+transforming...
+✓ 411 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                      5.70 kB │ gzip:  2.61 kB
+dist/assets/Register-BtlJW5JE.css                    1.32 kB │ gzip:  0.56 kB
+dist/assets/Login-CzOUX0FN.css                       2.01 kB │ gzip:  0.71 kB
+dist/assets/AdminHome-XGJQsl0H.css                   2.21 kB │ gzip:  0.69 kB
+dist/assets/ProductManage-DIRkhSnU.css               2.53 kB │ gzip:  0.76 kB
+dist/assets/ContainerManage-B8l5huAn.css             2.97 kB │ gzip:  0.78 kB
+dist/assets/Tracking-EiSKs7XK.css                    3.17 kB │ gzip:  0.87 kB
+dist/assets/WarehouseOps-CXwOK6xl.css                3.85 kB │ gzip:  0.96 kB
+dist/assets/Dashboard-D6ccEh54.css                   4.03 kB │ gzip:  1.01 kB
+dist/assets/Calculator-CYEweLxw.css                  4.62 kB │ gzip:  1.14 kB
+dist/assets/UserHome-BTUVggB_.css                    5.34 kB │ gzip:  1.34 kB
+dist/assets/Orders-BqQeyqsv.css                      5.51 kB │ gzip:  1.45 kB
+dist/assets/Warehouse-DtXttA1F.css                   6.31 kB │ gzip:  1.48 kB
+dist/assets/Detail-OtGtW7ae.css                      6.95 kB │ gzip:  1.66 kB
+dist/assets/Home-C8okZg9k.css                        7.27 kB │ gzip:  1.78 kB
+dist/assets/index-BPWsRRg8.css                     212.89 kB │ gzip: 56.92 kB
+dist/assets/_plugin-vue_export-helper-DlAUqK2U.js    0.09 kB │ gzip:  0.10 kB
+dist/assets/calculator-oWOCj1yy.js                   0.21 kB │ gzip:  0.17 kB
+dist/assets/agent-zZ3Hq1fT.js                        0.28 kB │ gzip:  0.19 kB
+dist/assets/product-BTTcwnhg.js                      0.38 kB │ gzip:  0.22 kB
+dist/assets/order-CJcaruE5.js                        0.39 kB │ gzip:  0.23 kB
+dist/assets/package-CLRazRCZ.js                      0.79 kB │ gzip:  0.34 kB
+dist/assets/function-call-DbecoZtN.js                0.86 kB │ gzip:  0.50 kB
+dist/assets/Login-C-QNe4iq.js                        3.72 kB │ gzip:  1.71 kB
+dist/assets/Register-B6VUBYxn.js                     4.25 kB │ gzip:  1.94 kB
+dist/assets/Home-DUdQRAYY.js                         6.10 kB │ gzip:  2.40 kB
+dist/assets/AdminHome-DZ6Hew5E.js                    6.12 kB │ gzip:  2.53 kB
+dist/assets/Tracking-CdvqwV4L.js                     6.13 kB │ gzip:  2.62 kB
+dist/assets/Dashboard-CG9GgIkb.js                    7.98 kB │ gzip:  3.40 kB
+dist/assets/Calculator-dkkjoTVq.js                   8.20 kB │ gzip:  3.54 kB
+dist/assets/Detail-68qcFxqK.js                       8.56 kB │ gzip:  3.80 kB
+dist/assets/Orders-B9kbqXhQ.js                      10.75 kB │ gzip:  4.72 kB
+dist/assets/ContainerManage-e_6vo7cj.js             10.98 kB │ gzip:  4.20 kB
+dist/assets/UserHome-DEmPZ-34.js                    11.01 kB │ gzip:  4.82 kB
+dist/assets/Warehouse-DJJeS06f.js                   12.10 kB │ gzip:  4.99 kB
+dist/assets/WarehouseOps-DCnavYtZ.js                12.17 kB │ gzip:  4.61 kB
+dist/assets/ProductManage-BI7RnakZ.js               12.96 kB │ gzip:  4.33 kB
+dist/assets/index-CE5lcGuL.js                      259.36 kB │ gzip: 97.31 kB
+✓ built in 8.00s

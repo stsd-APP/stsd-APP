@@ -1,0 +1,73 @@
+/**
+ * 叁通速达 - 数据库全自动生成器
+ * 作用：修复环境 -> 写入配置 -> 生成 dev.db 数据文件
+ */
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+// 路径定义
+const rootDir = __dirname;
+const dbDir = path.join(rootDir, 'packages/database');
+const prismaDir = path.join(dbDir, 'prisma');
+
+console.log('🚀 开始全自动生成数据库文件...');
+
+// 1. 强制重写 schema.prisma (确保是 SQLite 且包含 ProxyOrder)
+if (!fs.existsSync(prismaDir)) fs.mkdirSync(prismaDir, { recursive: true });
+
+const schemaContent = `
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 代付订单模型
+model ProxyOrder {
+  id        String   @id @default(uuid())
+  url       String
+  amount    Decimal
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+}
+
+// 预留的用户模型
+model User {
+  id    String @id @default(uuid())
+  email String @unique
+  name  String?
+}
+`;
+fs.writeFileSync(path.join(prismaDir, 'schema.prisma'), schemaContent);
+console.log('✅ 配置文件 schema.prisma 已修复');
+
+// 2. 强制写入 .env 文件
+fs.writeFileSync(path.join(dbDir, '.env'), 'DATABASE_URL="file:./dev.db"');
+console.log('✅ 环境变量 .env 已修复');
+
+// 3. 自动执行命令 (最关键的一步)
+try {
+  console.log('\n📦 正在安装必要的工具 (pnpm install)...');
+  // 忽略 workspace 警告，强制安装
+  execSync('pnpm install', { stdio: 'inherit', cwd: rootDir });
+
+  console.log('\n🔄 正在生成 Prisma 客户端 (prisma generate)...');
+  execSync('npx prisma generate', { stdio: 'inherit', cwd: dbDir });
+
+  console.log('\n💾 正在生成数据文件 (db:push)...');
+  // 这里使用 npx 确保调用的是项目内的 prisma
+  execSync('npx prisma db push', { stdio: 'inherit', cwd: dbDir });
+
+  console.log('\n🎉 ===========================================');
+  console.log('🎉 成功了！dev.db 文件已生成！');
+  console.log('🎉 现在你可以直接运行 pnpm dev 启动项目了');
+  console.log('🎉 ===========================================');
+
+} catch (error) {
+  console.error('\n❌ 生成失败:', error.message);
+  console.error('如果还是不行，请检查你的网络是否能下载 npm 包。');
+}

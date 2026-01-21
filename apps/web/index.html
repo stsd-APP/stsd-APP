@@ -1,13 +1,168 @@
-
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>叁通速达 H5</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- SEO 基礎 -->
+    <title>叁通速達 - 跨境大件家具專家</title>
+    <meta name="description" content="台灣包郵大件家具，海運專線直達，破損包賠，送貨到府。" />
+    <meta name="keywords" content="家具,海運,台灣,跨境,集運,1688,淘寶" />
+    
+    <!-- PWA / APP 支持 -->
+    <meta name="theme-color" content="#ee0a24" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="叁通速達" />
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- Capacitor 兼容 -->
+    <meta name="color-scheme" content="light" />
+    
+    <!-- 防止 iOS 縮放 -->
+    <meta name="HandheldFriendly" content="true" />
+    
+    <!-- Open Graph (社交分享) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="叁通速達 - 跨境大件家具專家" />
+    <meta property="og:description" content="台灣包郵大件家具，海運專線直達" />
+    <meta property="og:image" content="/og-image.jpg" />
+    
+    <!-- ============================================ -->
+    <!-- Facebook Pixel (Meta Pixel) 預埋 -->
+    <!-- 用途：追踪 FB 廣告轉化，優化廣告投放 -->
+    <!-- 使用：將 YOUR_PIXEL_ID 替換為實際的 Pixel ID -->
+    <!-- ============================================ -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      
+      // TODO: 替換為您的 Facebook Pixel ID
+      // fbq('init', 'YOUR_PIXEL_ID');
+      // fbq('track', 'PageView');
+      
+      // ============================================
+      // FB Pixel 事件追踪函數 (供 Vue 組件調用)
+      // ============================================
+      window.fbTrack = function(eventName, params) {
+        if (typeof fbq === 'function') {
+          fbq('track', eventName, params);
+          console.log('[FB Pixel]', eventName, params);
+        }
+      };
+      
+      // 預定義事件：
+      // - ViewContent: 查看商品詳情時調用
+      //   fbTrack('ViewContent', { content_name: '沙發', value: 5999, currency: 'TWD' })
+      //
+      // - AddToCart: 加入購物車時調用
+      //   fbTrack('AddToCart', { content_name: '沙發', value: 5999, currency: 'TWD' })
+      //
+      // - InitiateCheckout: 開始結帳時調用
+      //   fbTrack('InitiateCheckout', { value: 5999, currency: 'TWD' })
+      //
+      // - Purchase: 完成購買時調用
+      //   fbTrack('Purchase', { value: 5999, currency: 'TWD' })
+      //
+      // - Lead: 提交代付申請時調用
+      //   fbTrack('Lead', { content_name: '代付申請' })
+    </script>
+    <!-- End Facebook Pixel -->
+    
+    <!-- ============================================ -->
+    <!-- Google Analytics 預埋 (可選) -->
+    <!-- ============================================ -->
+    <!-- 
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+    -->
+    
+    <!-- 預連接優化 (加速 API 請求) -->
+    <link rel="preconnect" href="https://connect.facebook.net" />
+    <link rel="dns-prefetch" href="https://connect.facebook.net" />
+    
+    <!-- 字體預加載 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <!-- 內聯關鍵 CSS (首屏渲染優化) -->
+    <style>
+      /* 首屏骨架屏樣式 */
+      #app {
+        min-height: 100vh;
+        background: #f5f5f5;
+      }
+      /* 防止 FOUC */
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      /* iOS 安全區域適配 */
+      @supports (padding-bottom: env(safe-area-inset-bottom)) {
+        body {
+          padding-bottom: env(safe-area-inset-bottom);
+        }
+      }
+      /* 首屏加載動畫 */
+      .app-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f5f5f5;
+        z-index: 9999;
+      }
+      .app-loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #ee0a24;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
   </head>
-  <body class="bg-gray-50">
-    <div id="app"></div>
+  <body>
+    <!-- 首屏加載指示器 (Vue 掛載後自動消失) -->
+    <div id="app">
+      <div class="app-loading">
+        <div class="app-loading-spinner"></div>
+      </div>
+    </div>
+    
+    <!-- 主腳本 -->
     <script type="module" src="/src/main.ts"></script>
+    
+    <!-- Facebook Pixel NoScript 備用 -->
+    <noscript>
+      <!-- 
+      <img height="1" width="1" style="display:none"
+        src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1"/>
+      -->
+    </noscript>
   </body>
 </html>
