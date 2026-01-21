@@ -1,0 +1,4 @@
+{
+  "name": "@packages/database",
+  "main": "index.ts"
+}
